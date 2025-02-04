@@ -9,3 +9,4 @@ pydantic
 passlib
 pytest 
 pytest-asyncio
+psycopg2
