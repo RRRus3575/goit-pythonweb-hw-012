@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-dotenv
+sqlalchemy
+asyncpg
+cloudinary
+pyjwt
+pydantic
+passlib
+pytest 
+pytest-asyncio
