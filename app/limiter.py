@@ -23,7 +23,7 @@ def rate_limit_exceeded_handler(request: Request, exc):
 
     return JSONResponse(
         status_code=429,
-        content={"error": f"Rate limit exceeded: {detail}"}
+        content={"error": f"Rate limit exceeded: {exc.error_message}"}
     )
 
 limiter.handler = rate_limit_exceeded_handler
