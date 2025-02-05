@@ -4,12 +4,15 @@ from .models import Base
 from .database import engine
 from .routers import contacts, auth, reset_password, user_roles, jwt_refresh_tokens
 from app.config import settings
-from app.limiter import add_rate_limit_middleware
-
-
-
+from app.limiter import limiter, add_rate_limit_middleware  # Добавил `limiter`
 
 app = FastAPI()
+
+# Добавляем limiter в state
+app.state.limiter = limiter  # <-- ВАЖНО!
+
+# Подключаем middleware для лимитирования
+add_rate_limit_middleware(app)
 
 # CORS Middleware
 origins = [
@@ -28,13 +31,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Лимитер запросов
-add_rate_limit_middleware(app)
-
 @app.get("/")
 def read_root():
     return {"message": "API работает!"}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 @app.on_event("startup")
 async def startup():
@@ -47,5 +50,3 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(reset_password.router, prefix="/auth", tags=["Auth"])
 app.include_router(user_roles.router, tags=["User Roles"])
 app.include_router(jwt_refresh_tokens.router, tags=["Auth"])
-
-
