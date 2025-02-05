@@ -8,13 +8,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from ..database import get_db
 from ..models import User
 from ..schemas import UserCreate, Token, UserResponse
-from ..utils import send_verification_email
+from ..utils import send_verification_email  
 from ..cloudinary_utils import upload_avatar
-
 
 router = APIRouter()
 
-# Секретный ключ
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("JWT_SECRET_KEY не задан в .env")
@@ -24,15 +22,21 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """
-    Gets the current user from the JWT token.
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    :param token: JWT authentication token.
-    :param db: Database session.
-    :return: User object.
-    :raises HTTPException: If the token is invalid or the user is not found.
-    """
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -45,23 +49,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
-
-# Настройки паролей
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Хеширование паролей
-def get_password_hash(password: str):
-    return pwd_context.hash(password)
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-# Создание JWT-токена
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @router.get("/verify-email/{token}")
 def verify_email(token: str, db: Session = Depends(get_db)):
@@ -80,6 +67,7 @@ def verify_email(token: str, db: Session = Depends(get_db)):
 
         user.is_verified = True
         db.commit()
+        db.refresh(user)  
 
         return {"message": "Email successfully verified"}
     except JWTError:
@@ -93,7 +81,8 @@ def upload_user_avatar(
 ):
     """Загружает аватар пользователя"""
     try:
-        avatar_url = upload_avatar(file.file, public_id=current_user.email)
+        public_id = current_user.email.replace("@", "_").replace(".", "_")  
+        avatar_url = upload_avatar(file.file, public_id=public_id)
 
         current_user.avatar_url = avatar_url
         db.commit()

@@ -12,7 +12,7 @@ if not all([SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD]):
     raise ValueError("❌ SMTP настройки не заданы в .env")
 
 # Отправка письма
-def send_email(subject, body, to_email):
+def send_verification_email(subject, body, to_email):
     try:
         msg = MIMEText(body)
         msg["Subject"] = subject
