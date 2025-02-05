@@ -7,7 +7,7 @@ from slowapi.middleware import SlowAPIMiddleware
 limiter = Limiter(key_func=get_remote_address)
 
 # Функция обработки ошибок лимита
-@limiter.request_filter
+@limiter._request_filters
 def exempt_health_checks(request: Request):
     """Исключаем системные проверки из лимитирования запросов"""
     return request.url.path == "/health"
