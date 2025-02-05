@@ -7,14 +7,15 @@ from slowapi.middleware import SlowAPIMiddleware
 
 limiter = Limiter(key_func=get_remote_address)
 
-@limiter.request_filter
 def exempt_health_checks(request: Request):
     return request.url.path == "/health"
+
+limiter.request_filter(exempt_health_checks)
 
 def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
         status_code=429,
-        content={"error": "Превышен лимит запросов. Подождите и попробуйте снова."}
+        content={"error": "Request limit exceeded. Please wait and try again."}
     )
 
 limiter.handler = rate_limit_exceeded_handler
