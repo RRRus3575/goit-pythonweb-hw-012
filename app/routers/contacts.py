@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
+from ..models import User
 from ..database import get_db
 from ..schemas import ContactCreate, ContactResponse, ContactUpdate
 from ..crud import create_contact, get_contacts, get_contact_by_id, update_contact, delete_contact, search_contacts, get_upcoming_birthdays
