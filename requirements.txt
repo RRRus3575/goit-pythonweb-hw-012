@@ -15,5 +15,5 @@ python-multipart
 redis
 pydantic-settings
 aiosmtplib
-slowapi==0.1.8
+slowapi>=0.1.9
 
