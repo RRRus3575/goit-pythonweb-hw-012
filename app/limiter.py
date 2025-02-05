@@ -9,7 +9,8 @@ def exempt_health_checks(request: Request):
     """Исключаем системные проверки из лимитирования запросов"""
     return request.url.path == "/health"
 
-limiter.request_filter(exempt_health_checks)
+limiter._request_filters.append(exempt_health_checks)
+
 
 def add_rate_limit_middleware(app):
     app.add_middleware(SlowAPIMiddleware)
