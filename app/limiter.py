@@ -3,15 +3,13 @@ from slowapi.util import get_remote_address
 from fastapi import Request
 from slowapi.middleware import SlowAPIMiddleware
 
-# Создаем лимитер, который считает запросы по IP-адресу
 limiter = Limiter(key_func=get_remote_address)
 
-# Функция обработки ошибок лимита
-@limiter._request_filters
 def exempt_health_checks(request: Request):
     """Исключаем системные проверки из лимитирования запросов"""
     return request.url.path == "/health"
 
-# Middleware для лимитирования
+limiter.request_filter(exempt_health_checks)
+
 def add_rate_limit_middleware(app):
     app.add_middleware(SlowAPIMiddleware)
