@@ -13,3 +13,4 @@ pytest-asyncio
 python-jose
 python-multipart
 redis
+pydantic-settings
