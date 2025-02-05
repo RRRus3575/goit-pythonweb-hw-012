@@ -16,14 +16,11 @@ limiter._request_filters.append(exempt_health_checks)
 
 
 def rate_limit_exceeded_handler(request: Request, exc):
-    if isinstance(exc, RateLimitExceeded):
-        detail = exc.detail if hasattr(exc, "detail") else "Too many requests"
-    else:
-        detail = str(exc) 
-
+    error_message = getattr(exc, "error_message", "Too many requests")
+    
     return JSONResponse(
         status_code=429,
-        content={"error": f"Rate limit exceeded: {exc.detail}"}
+        content={"error": f"Rate limit exceeded: {error_message}"}
     )
 
 limiter.handler = rate_limit_exceeded_handler
