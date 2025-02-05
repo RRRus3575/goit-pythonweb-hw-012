@@ -5,7 +5,7 @@ sqlalchemy
 asyncpg
 cloudinary
 pyjwt
-pydantic
+pydantic[email]
 passlib
 pytest 
 pytest-asyncio
