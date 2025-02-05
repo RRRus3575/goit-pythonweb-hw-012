@@ -9,4 +9,5 @@ pydantic[email]
 passlib
 pytest 
 pytest-asyncio
+python-jose
 
