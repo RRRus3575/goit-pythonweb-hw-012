@@ -10,12 +10,14 @@ limiter = Limiter(key_func=get_remote_address)
 def exempt_health_checks(request: Request):
     return request.url.path == "/health"
 
-limiter._request_filters.append(exempt_health_checks)
-
 def rate_limit_exceeded_handler(request: Request, exc):
+    print(type(exc))  
+
+    error_message = str(exc)  
+
     return JSONResponse(
         status_code=429,
-        content={"error": f"Rate limit exceeded: {str(exc)}"}
+        content={"error": f"Rate limit exceeded: {error_message}"}
     )
 
 limiter.handler = rate_limit_exceeded_handler
