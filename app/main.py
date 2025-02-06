@@ -11,8 +11,6 @@ from fastapi import Request
 
 app = FastAPI()
 
-add_rate_limit_middleware(app)
-
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +19,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+add_rate_limit_middleware(app)
 
 @app.get("/")
 def read_root():
@@ -34,6 +34,7 @@ async def health_check():
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    print("✅ The database has been initialized successfully!")
 
 # Маршруты
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])

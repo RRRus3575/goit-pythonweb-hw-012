@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from datetime import date
 
@@ -21,8 +21,7 @@ class ContactResponse(ContactBase):
     id: int
     user_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Пользователь 
 class UserCreate(BaseModel):
@@ -34,8 +33,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     is_verified: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # JWT-токен
 class Token(BaseModel):
