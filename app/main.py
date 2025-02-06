@@ -8,8 +8,12 @@ from app.limiter import add_rate_limit_middleware
 from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
 from fastapi import Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
 
 app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
 
 # CORS Middleware
 app.add_middleware(
@@ -23,6 +27,7 @@ app.add_middleware(
 add_rate_limit_middleware(app)
 
 @app.get("/")
+@limiter.limit("5/minute")
 def read_root():
     return {"message": "API work!"}
 
