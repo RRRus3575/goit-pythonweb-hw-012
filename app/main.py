@@ -28,7 +28,7 @@ add_rate_limit_middleware(app)
 
 @app.get("/")
 @limiter.limit("5/minute")
-def read_root():
+async def read_root(request: Request):
     return {"message": "API work!"}
 
 @app.get("/health")
