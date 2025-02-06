@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-add_rate_limit_middleware(app)
+# add_rate_limit_middleware(app)
 
 @app.get("/")
 def read_root():

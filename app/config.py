@@ -18,12 +18,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 
-print("🔍 DATABASE_URL:", os.getenv("DATABASE_URL"))
-print("🔍 JWT_SECRET_KEY:", os.getenv("JWT_SECRET_KEY"))
-print("🔍 REDIS_URL:", os.getenv("REDIS_URL"))
-print("🔍 SMTP_USER:", os.getenv("SMTP_USER"))
-
-
 settings = Settings()
+
+print("🔍 DATABASE_URL:", settings.DATABASE_URL)
+print("🔍 REDIS_URL:", settings.REDIS_URL)
 
 redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
