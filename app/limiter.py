@@ -12,17 +12,14 @@ def exempt_health_checks(request: Request):
 
 limiter._request_filters.append(exempt_health_checks)
 
-async def rate_limit_exceeded_handler(request: Request, exc):
-    error_message = str(exc) 
+def rate_limit_exceeded_handler(request: Request, exc):
     return JSONResponse(
         status_code=429,
-        content={"error": f"Rate limit exceeded: {error_message}"}
+        content={"error": f"Rate limit exceeded: {str(exc)}"}
     )
 
-
+limiter.handler = rate_limit_exceeded_handler
 
 def add_rate_limit_middleware(app: FastAPI):
     app.state.limiter = limiter  
     app.add_middleware(SlowAPIMiddleware)
-    
-    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
