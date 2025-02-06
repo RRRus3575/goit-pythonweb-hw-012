@@ -1,31 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware  
-from .models import Base
-from .database import engine
-from .routers import contacts, auth, reset_password, user_roles, jwt_refresh_tokens
+from app.models import Base
+from app.database import engine
+from app.routers import contacts, auth, reset_password, user_roles, jwt_refresh_tokens
 from app.config import settings
-from app.limiter import limiter, add_rate_limit_middleware  # Добавил `limiter`
+from app.limiter import add_rate_limit_middleware
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+from fastapi import Request
 
 app = FastAPI()
 
-# Добавляем limiter в state
-app.state.limiter = limiter  # <-- ВАЖНО!
-
-# Подключаем middleware для лимитирования
 add_rate_limit_middleware(app)
 
 # CORS Middleware
-origins = [
-    "http://localhost:3000",  
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",  
-    "http://127.0.0.1:5173",
-    "*", 
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,7 +24,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "API работает!"}
+    return {"message": "API work!"}
 
 @app.get("/health")
 async def health_check():
@@ -45,8 +36,16 @@ async def startup():
         await conn.run_sync(Base.metadata.create_all)
 
 # Маршруты
-app.include_router(contacts.router, prefix="/contacts", tags=["Contacts"])
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(reset_password.router, prefix="/auth", tags=["Auth"])
+app.include_router(reset_password.router, prefix="/auth/password-reset", tags=["Password Reset"])  # Изменили префикс
 app.include_router(user_roles.router, tags=["User Roles"])
 app.include_router(jwt_refresh_tokens.router, tags=["Auth"])
+app.include_router(contacts.router, prefix="/contacts", tags=["Contacts"])
+
+# Обработчик ошибок Rate Limit
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"error": "Rate limit exceeded. Please try again later."}
+    )
